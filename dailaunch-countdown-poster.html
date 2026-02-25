@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DaiLaunch — 10 Min Countdown</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #02020a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    gap: 32px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* ══ POSTER 1200x675 ══ */
+  .poster {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    overflow: hidden;
+    background: #03030e;
+    border-radius: 24px;
+    flex-shrink: 0;
+  }
+
+  /* Noise texture overlay */
+  .poster::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Grid */
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,180,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,180,0,0.04) 1px, transparent 1px);
+    background-size: 55px 55px;
+  }
+
+  /* Glows */
+  .g1 {
+    position: absolute;
+    width: 700px; height: 700px;
+    top: -300px; left: -150px;
+    background: radial-gradient(circle, rgba(255, 140, 0, 0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .g2 {
+    position: absolute;
+    width: 500px; height: 500px;
+    bottom: -200px; right: -100px;
+    background: radial-gradient(circle, rgba(120, 40, 255, 0.2) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .g3 {
+    position: absolute;
+    width: 300px; height: 300px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255, 200, 0, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Diagonal stripe accent */
+  .stripe {
+    position: absolute;
+    top: 0; right: 240px;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(255,160,0,0.3) 30%, rgba(255,160,0,0.5) 50%, rgba(255,160,0,0.3) 70%, transparent);
+    transform: skewX(-8deg);
+  }
+  .stripe2 {
+    position: absolute;
+    top: 0; right: 260px;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(255,160,0,0.1) 50%, transparent);
+    transform: skewX(-8deg);
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+  }
+
+  /* Top label */
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 0 12px rgba(255, 180, 0, 0.8));
+  }
+
+  .brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #fff;
+    letter-spacing: 3px;
+  }
+
+  .chain-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 82, 255, 0.15);
+    border: 1px solid rgba(0, 82, 255, 0.35);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: #6699ff;
+    letter-spacing: 0.05em;
+  }
+
+  .chain-dot {
+    width: 7px; height: 7px;
+    background: #0052ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #0052ff;
+  }
+
+  /* Main headline */
+  .headline-block {
+    margin-bottom: 36px;
+  }
+
+  .pre-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: rgba(255, 180, 0, 0.8);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pre-label::before {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 2px;
+    background: rgba(255,180,0,0.6);
+  }
+
+  .main-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 110px;
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: #fff;
+    text-shadow: 0 0 80px rgba(255, 160, 0, 0.3);
+  }
+
+  .main-headline .highlight {
+    color: #ffb300;
+    text-shadow: 0 0 40px rgba(255, 180, 0, 0.6), 0 0 80px rgba(255, 180, 0, 0.3);
+  }
+
+  .sub-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    color: rgba(220, 210, 255, 0.6);
+    font-weight: 400;
+    margin-top: 12px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Bottom row — countdown + features */
+  .bottom-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 60px;
+  }
+
+  /* Countdown */
+  .countdown-block {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .count-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .count-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    color: #ffb300;
+    text-shadow: 0 0 30px rgba(255,180,0,0.5);
+    background: rgba(255,180,0,0.08);
+    border: 1px solid rgba(255,180,0,0.25);
+    border-radius: 10px;
+    padding: 4px 16px;
+    min-width: 88px;
+    text-align: center;
+    letter-spacing: 2px;
+  }
+
+  .count-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,180,0,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .count-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 60px;
+    color: rgba(255,180,0,0.4);
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+
+  /* Features list */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 40px;
+    flex: 1;
+  }
+
+  .feat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    color: rgba(220, 210, 255, 0.75);
+    font-weight: 500;
+  }
+
+  .feat-dot {
+    width: 6px; height: 6px;
+    background: #ffb300;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(255,180,0,0.6);
+  }
+
+  /* URL bottom right */
+  .url-corner {
+    position: absolute;
+    bottom: 36px;
+    right: 60px;
+    z-index: 3;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: rgba(255,180,0,0.7);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .url-corner::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: rgba(255,180,0,0.4);
+  }
+
+  /* ══ TWEET COPY BOX ══ */
+  .tweet-box {
+    width: 1200px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,180,0,0.15);
+    border-radius: 16px;
+    padding: 28px 40px;
+  }
+
+  .tweet-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,180,0,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+  }
+
+  .tweet-body {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    color: rgba(220, 210, 255, 0.85);
+    line-height: 1.9;
+    white-space: pre-line;
+  }
+
+  .copy-btn {
+    margin-top: 18px;
+    background: rgba(255, 180, 0, 0.1);
+    border: 1px solid rgba(255, 180, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px 24px;
+    color: #ffb300;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: rgba(255, 180, 0, 0.2);
+    color: #fff;
+  }
+
+  .note {
+    width: 1200px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(180, 160, 255, 0.3);
+    text-align: center;
+    padding-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="poster" id="poster">
+  <div class="grid-bg"></div>
+  <div class="g1"></div>
+  <div class="g2"></div>
+  <div class="g3"></div>
+  <div class="stripe"></div>
+  <div class="stripe2"></div>
+
+  <div class="content">
+    <!-- Top -->
+    <div class="top-row">
+      <div class="brand-row">
+        <span class="brand-icon">⚡</span>
+        <span class="brand-name">DaiLaunch</span>
+      </div>
+      <div class="chain-badge">
+        <div class="chain-dot"></div>
+        Base Mainnet
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <div class="headline-block">
+      <div class="pre-label">Token Launch Alert</div>
+      <div class="main-headline">
+        LAUNCHING<br>
+        IN <span class="highlight">10 MIN</span>
+      </div>
+      <div class="sub-headline">Deploy your own token on Base — earn 70% of trading fees forever</div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="bottom-row">
+      <!-- Countdown -->
+      <div class="countdown-block">
+        <div class="count-unit">
+          <div class="count-num" id="mins">10</div>
+          <div class="count-label">Minutes</div>
+        </div>
+        <div class="count-sep">:</div>
+        <div class="count-unit">
+          <div class="count-num" id="secs">00</div>
+          <div class="count-label">Seconds</div>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="features-grid">
+        <div class="feat"><div class="feat-dot"></div>Launch ERC-20 in 60 seconds</div>
+        <div class="feat"><div class="feat-dot"></div>Earn 70% of all trading fees</div>
+        <div class="feat"><div class="feat-dot"></div>Auto-listed on DexScreener</div>
+        <div class="feat"><div class="feat-dot"></div>Connect GitHub → Deploy → Done</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="url-corner">dailaunch.online</div>
+</div>
+
+<!-- Tweet Copy -->
+<div class="tweet-box">
+  <div class="tweet-label">📋 Tweet Text — Copy & Post Now</div>
+  <div class="tweet-body">⚡ We're launching our first token on DaiLaunch in <strong style="color:#ffb300">10 MINUTES.</strong>
+
+🔥 DaiLaunch lets anyone deploy an ERC-20 token on Base — in under 60 seconds.
+
+✅ No code needed
+✅ Earn 70% of ALL trading fees as the creator — forever
+✅ Auto-listed on DexScreener with live chart
+
+Don't miss the launch 👀
+
+👉 dailaunch.online
+
+#Base #DeFi #Web3 #Crypto #BaseChain #TokenLaunch</div>
+  <button class="copy-btn" onclick="copyTweet()">📋 Copy Tweet Text</button>
+</div>
+
+<div class="note">↑ Screenshot the poster above (1200×675) → attach to tweet → paste the text → post!</div>
+
+<script>
+// Live countdown from 10 minutes
+let totalSeconds = 10 * 60;
+const minsEl = document.getElementById('mins');
+const secsEl = document.getElementById('secs');
+
+function tick() {
+  if (totalSeconds <= 0) {
+    minsEl.textContent = '00';
+    secsEl.textContent = '00';
+    return;
+  }
+  totalSeconds--;
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  minsEl.textContent = String(m).padStart(2, '0');
+  secsEl.textContent = String(s).padStart(2, '0');
+}
+setInterval(tick, 1000);
+
+function copyTweet() {
+  const text = `⚡ We're launching our first token on DaiLaunch in 10 MINUTES.
+
+🔥 DaiLaunch lets anyone deploy an ERC-20 token on Base — in under 60 seconds.
+
+✅ No code needed
+✅ Earn 70% of ALL trading fees as the creator — forever
+✅ Auto-listed on DexScreener with live chart
+
+Don't miss the launch 👀
+
+👉 dailaunch.online
+
+#Base #DeFi #Web3 #Crypto #BaseChain #TokenLaunch`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Tweet Text', 2000);
+  });
+}
+</script>
+</body>
+</html>
